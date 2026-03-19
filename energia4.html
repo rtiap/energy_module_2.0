@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RTIAP Energy — Costos & Tarifas (Mockup)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0f1a2f; --panel2:#0c172b; --card:#101f3a; --text:#e8eefc; --muted:#a8b4d6;
+      --line:rgba(255,255,255,.08); --ok:#2dd4bf; --warn:#fbbf24; --bad:#fb7185; --brand:#ff8a00;
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --r:18px; --r2:14px; --pad:16px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font); color:var(--text);
+      background: radial-gradient(1200px 600px at 18% -10%, rgba(255,138,0,.18), transparent 60%),
+                  radial-gradient(900px 500px at 92% 10%, rgba(45,212,191,.12), transparent 55%),
+                  var(--bg);
+    }
+    .app{display:grid; grid-template-columns: 360px 1fr; min-height:100vh}
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 25%), var(--panel2);
+      border-right:1px solid var(--line); padding:18px;
+    }
+    .brand{display:flex; gap:10px; align-items:center; padding:10px 10px 14px; border-bottom:1px solid var(--line); margin-bottom:14px}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#ffcc66); box-shadow:0 10px 20px rgba(255,138,0,.2)}
+    .brand h1{font-size:14px;margin:0}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+    .nav{display:flex; flex-direction:column; gap:8px}
+    .nav a{padding:10px 12px; border-radius:12px; border:1px solid transparent; color:var(--muted); display:flex; gap:10px; align-items:center}
+    .nav a.active{background:rgba(255,255,255,.04); border-color:var(--line); color:var(--text)}
+    .pill{padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px; white-space:nowrap}
+    .section-title{margin:16px 0 8px; font-size:12px; color:var(--muted); letter-spacing:.35px; text-transform:uppercase}
+    .field{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:10px}
+    label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    input, select{width:100%; background:transparent; border:0; outline:none; color:var(--text); font-size:13px}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .btn{width:100%; display:inline-flex; justify-content:center; align-items:center; gap:8px; padding:11px 12px; border-radius:14px;
+         border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); cursor:pointer}
+    .btn.primary{border-color: rgba(255,138,0,.35); background: linear-gradient(135deg, rgba(255,138,0,.25), rgba(255,255,255,.04))}
+    .btn.ghost{background:transparent; color:var(--muted)}
+    .toggle{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px; border-radius:14px; border:1px solid var(--line);
+      background:rgba(255,255,255,.03); margin-bottom:10px; color:var(--muted); font-size:13px
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.35}
+
+    .main{padding:18px}
+    .topbar{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px}
+    .title h2{margin:0; font-size:18px}
+    .title p{margin:4px 0 0; color:var(--muted); font-size:13px}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+    .cards{display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:14px}
+    .kpi{border:1px solid var(--line); background: rgba(255,255,255,.03); border-radius: var(--r2); padding:12px}
+    .kpi .label{margin:0 0 6px; font-size:11px; color:var(--muted)}
+    .kpi .value{font-size:20px; font-weight:800}
+    .kpi .sub{margin-top:6px; display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted)}
+    .delta.ok{color:var(--ok)} .delta.warn{color:var(--warn)} .delta.bad{color:var(--bad)}
+
+    .grid{display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; align-items:start}
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--card);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: var(--pad);
+    }
+    .card h3{margin:0 0 10px; font-size:14px}
+    .chart{
+      height: 260px; border-radius:16px; border:1px dashed rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 45%),
+                  radial-gradient(600px 300px at 30% 20%, rgba(45,212,191,.10), transparent 60%),
+                  rgba(0,0,0,.12);
+      display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; position:relative; overflow:hidden;
+    }
+    .chart::after{
+      content:""; position:absolute; inset:-40%;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 28px);
+      transform: rotate(-8deg); pointer-events:none;
+    }
+    .legend{position:absolute; left:14px; top:14px; display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); z-index:1; flex-wrap:wrap}
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block}
+    .dot.a{background:var(--brand)} .dot.b{background:var(--ok)} .dot.c{background:var(--warn)} .dot.d{background:#9aa7ff}
+
+    table{width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:rgba(255,255,255,.02)}
+    th,td{padding:10px; border-bottom:1px solid var(--line); font-size:12px; text-align:left}
+    th{color:var(--muted); font-weight:600; background:rgba(255,255,255,.03)}
+    tr:last-child td{border-bottom:0}
+
+    .badge{
+      padding:3px 8px; border-radius:999px; border:1px solid var(--line);
+      font-size:11px; color:var(--muted); background:rgba(255,255,255,.03)
+    }
+    .badge.ok{border-color:rgba(45,212,191,.25); color:var(--ok); background:rgba(45,212,191,.12)}
+    .badge.warn{border-color:rgba(251,191,36,.25); color:var(--warn); background:rgba(251,191,36,.12)}
+    .badge.bad{border-color:rgba(251,113,133,.25); color:var(--bad); background:rgba(251,113,133,.12)}
+
+    .insight{
+      display:flex; gap:12px; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.03); margin-bottom:10px
+    }
+    .icon{
+      width:32px; height:32px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:12px; flex:0 0 auto
+    }
+    .icon.ok{background:rgba(45,212,191,.15); color:var(--ok); border:1px solid rgba(45,212,191,.25)}
+    .icon.warn{background:rgba(251,191,36,.15); color:var(--warn); border:1px solid rgba(251,191,36,.25)}
+    .icon.bad{background:rgba(251,113,133,.15); color:var(--bad); border:1px solid rgba(251,113,133,.25)}
+    .insight h4{margin:0; font-size:13px}
+    .insight p{margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.35}
+
+    .small{color:var(--muted); font-size:12px; margin-top:10px}
+    @media (max-width: 1200px){
+      .app{grid-template-columns:1fr}
+      .cards{grid-template-columns: repeat(2,1fr)}
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>RTIAP Energy</h1>
+          <p>Costos • Tarifas • Proyección</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#"><span>📊</span> Overview</a>
+        <a href="#"><span>📈</span> Analytics</a>
+        <a href="#"><span>🏭</span> Por activos</a>
+        <a class="active" href="#"><span>🧾</span> Costos & Tarifas <span class="pill">Factura</span></a>
+        <a href="#"><span>🚨</span> Alarmas</a>
+        <a href="#"><span>📤</span> Reportes</a>
+      </nav>
+
+      <div class="section-title">Período</div>
+      <div class="row">
+        <div class="field">
+          <label>Mes</label>
+          <select>
+            <option>Febrero 2026</option>
+            <option>Enero 2026</option>
+            <option>Diciembre 2025</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Moneda</label>
+          <select>
+            <option>USD</option>
+            <option>CLP</option>
+            <option>EUR</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">Tarifa (editable)</div>
+      <div class="field">
+        <label>Punta (moneda/kWh)</label>
+        <input value="0.28" />
+      </div>
+      <div class="field">
+        <label>Llano (moneda/kWh)</label>
+        <input value="0.18" />
+      </div>
+      <div class="field">
+        <label>Valle (moneda/kWh)</label>
+        <input value="0.12" />
+      </div>
+
+      <div class="section-title">Horario (editable)</div>
+      <div class="field">
+        <label>Punta (HH:MM–HH:MM)</label>
+        <input value="18:00–22:00" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Llano</label>
+          <input value="08:00–18:00" />
+        </div>
+        <div class="field">
+          <label>Valle</label>
+          <input value="22:00–08:00" />
+        </div>
+      </div>
+
+      <div class="section-title">Penalizaciones (placeholder)</div>
+      <div class="field">
+        <label>PF mínimo (objetivo)</label>
+        <input value="0.92" />
+      </div>
+      <div class="field">
+        <label>Factor penalización reactiva</label>
+        <input value="(según compañía)" />
+      </div>
+      <div class="toggle">
+        <span>Incluir cargos por demanda máx (kW)</span>
+        <span class="pill">ON</span>
+      </div>
+
+      <div class="row">
+        <button class="btn primary">Aplicar & Simular</button>
+        <button class="btn ghost">Restaurar</button>
+      </div>
+
+      <p class="hint">
+        Objetivo: que el cliente pueda “jugar” con la tarifa y ver impacto directo (ahorro potencial).
+      </p>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="title">
+          <h2>Costos & Tarifas — Proyección de factura</h2>
+          <p>Desglose por tramo horario, demanda máxima, y penalización por reactiva/PF (si aplica).</p>
+        </div>
+        <div class="actions">
+          <span class="pill">Última actualización: 3 min</span>
+          <span class="pill">Exportar PDF ▾</span>
+          <span class="pill">Guardar tarifa ▾</span>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <section class="cards">
+        <div class="kpi">
+          <div class="label">Factura estimada (mes)</div>
+          <div class="value">$ 128,450</div>
+          <div class="sub"><span>vs mes anterior</span><span class="delta warn">▲ 7.2%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Energía (kWh)</div>
+          <div class="value">712,000</div>
+          <div class="sub"><span>punta</span><span class="delta bad">28%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Demanda máx (kW)</div>
+          <div class="value">612</div>
+          <div class="sub"><span>en punta</span><span class="delta bad">● Sí</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Reactiva / PF</div>
+          <div class="value">PF 0.89</div>
+          <div class="sub"><span>riesgo penal.</span><span class="delta warn">Medio</span></div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <!-- Left: breakdown -->
+        <div class="card">
+          <h3>Desglose por tramo horario</h3>
+          <div class="chart" role="img" aria-label="Desglose por horario">
+            <div class="legend">
+              <span><span class="dot a"></span> Punta</span>
+              <span><span class="dot b"></span> Llano</span>
+              <span><span class="dot c"></span> Valle</span>
+              <span><span class="dot d"></span> Mes anterior</span>
+            </div>
+            (Aquí va un stacked-bar o donut + comparación mensual)
+          </div>
+
+          <table aria-label="Tabla desglose">
+            <thead>
+              <tr>
+                <th>Tramo</th>
+                <th>kWh</th>
+                <th>Tarifa</th>
+                <th>Costo</th>
+                <th>Señal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Punta</td>
+                <td>199,000</td>
+                <td>$0.28</td>
+                <td>$55,720</td>
+                <td><span class="badge bad">alto impacto</span></td>
+              </tr>
+              <tr>
+                <td>Llano</td>
+                <td>356,000</td>
+                <td>$0.18</td>
+                <td>$64,080</td>
+                <td><span class="badge warn">optimizable</span></td>
+              </tr>
+              <tr>
+                <td>Valle</td>
+                <td>157,000</td>
+                <td>$0.12</td>
+                <td>$18,840</td>
+                <td><span class="badge ok">bien</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p class="small">
+            UX pro: permitir “simulación” en caliente: cambio de tarifa/horario recalcula costos y muestra “ahorro potencial”.
+          </p>
+        </div>
+
+        <!-- Right: simulator + recommendations -->
+        <div>
+          <div class="card">
+            <h3>Simulador “qué pasa si…”</h3>
+
+            <div class="field">
+              <label>Mover consumo desde punta → valle (kWh)</label>
+              <input value="10,000" />
+            </div>
+            <div class="field">
+              <label>Objetivo PF (mejorar factor de potencia)</label>
+              <input value="0.95" />
+            </div>
+            <div class="field">
+              <label>Reducir demanda máxima objetivo (kW)</label>
+              <input value="550" />
+            </div>
+
+            <div class="row">
+              <button class="btn primary">Recalcular</button>
+              <button class="btn ghost">Reset</button>
+            </div>
+
+            <div class="kpi" style="margin-top:12px;">
+              <div class="label">Ahorro potencial estimado</div>
+              <div class="value">$ 6,340</div>
+              <div class="sub"><span>principal driver</span><span class="delta ok">punta → valle</span></div>
+            </div>
+
+            <p class="small">
+              Nota: el simulador no necesita ser perfecto al inicio. Con reglas simples ya “vende”.
+            </p>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3>Recomendaciones</h3>
+
+            <div class="insight">
+              <div class="icon bad">!</div>
+              <div>
+                <h4>Reducir consumo en punta</h4>
+                <p>Mover ciclos no críticos (defrost/auxiliares) fuera de 18:00–22:00. Impacto alto en costo.</p>
+              </div>
+            </div>
+
+            <div class="insight">
+              <div class="icon warn">!</div>
+              <div>
+                <h4>Corregir PF / reactiva</h4>
+                <p>PF promedio 0.89. Evaluar banco de capacitores o control dinámico para evitar penalización.</p>
+              </div>
+            </div>
+
+            <div class="insight">
+              <div class="icon ok">✓</div>
+              <div>
+                <h4>Frecuencia y voltaje estables</h4>
+                <p>Sin eventos de calidad relevantes detectados. Mantener monitoreo y alarmas de caída V.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:14px;">
+        <h3>Detalle de cargos (editable por modelo tarifario)</h3>
+        <table aria-label="Cargos">
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Base</th>
+              <th>Unidad</th>
+              <th>Cálculo</th>
+              <th>Monto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Energía (punta/llano/valle)</td>
+              <td>712,000</td>
+              <td>kWh</td>
+              <td>Σ(kWh_tramo × tarifa_tramo)</td>
+              <td>$138,640</td>
+              <td><span class="badge warn">estimado</span></td>
+            </tr>
+            <tr>
+              <td>Demanda máxima</td>
+              <td>612</td>
+              <td>kW</td>
+              <td>kW_max × cargo_demanda</td>
+              <td>$8,900</td>
+              <td><span class="badge warn">si aplica</span></td>
+            </tr>
+            <tr>
+              <td>Penalización reactiva</td>
+              <td>PF 0.89</td>
+              <td>—</td>
+              <td>modelo compañía (placeholder)</td>
+              <td>$0–$XX,XXX</td>
+              <td><span class="badge bad">riesgo</span></td>
+            </tr>
+            <tr>
+              <td>Otros cargos</td>
+              <td>—</td>
+              <td>—</td>
+              <td>editable</td>
+              <td>$—</td>
+              <td><span class="badge">opcional</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small">
+          Esta tabla es clave para soportar distintos países/compañías eléctricas: el modelo tarifario debe ser configurable.
+        </p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

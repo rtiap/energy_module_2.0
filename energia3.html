@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RTIAP Energy — Por activos (Mockup)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0f1a2f; --panel2:#0c172b; --card:#101f3a; --text:#e8eefc; --muted:#a8b4d6;
+      --line:rgba(255,255,255,.08); --ok:#2dd4bf; --warn:#fbbf24; --bad:#fb7185; --brand:#ff8a00;
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --r:18px; --r2:14px; --pad:16px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font); color:var(--text);
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(255,138,0,.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(45,212,191,.12), transparent 55%),
+                  var(--bg);
+    }
+    .app{display:grid; grid-template-columns: 360px 1fr; min-height:100vh}
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 25%), var(--panel2);
+      border-right:1px solid var(--line); padding:18px;
+    }
+    .brand{display:flex; gap:10px; align-items:center; padding:10px 10px 14px; border-bottom:1px solid var(--line); margin-bottom:14px}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#ffcc66); box-shadow:0 10px 20px rgba(255,138,0,.2)}
+    .brand h1{font-size:14px;margin:0}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+    .nav{display:flex; flex-direction:column; gap:8px}
+    .nav a{padding:10px 12px; border-radius:12px; border:1px solid transparent; color:var(--muted); display:flex; gap:10px; align-items:center}
+    .nav a.active{background:rgba(255,255,255,.04); border-color:var(--line); color:var(--text)}
+    .section-title{margin:16px 0 8px; font-size:12px; color:var(--muted); letter-spacing:.35px; text-transform:uppercase}
+
+    .search{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px; border-radius:14px; border:1px solid var(--line);
+      background:rgba(255,255,255,.03); color:var(--muted); margin:12px 0;
+    }
+    .search input{width:100%; border:0; outline:none; background:transparent; color:var(--text); font-size:13px}
+
+    .tree{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      border-radius: 16px;
+      padding: 10px;
+      max-height: 420px;
+      overflow:auto;
+    }
+    .node{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 12px;
+      color: var(--muted);
+      cursor:pointer;
+    }
+    .node:hover{background: rgba(255,255,255,.03)}
+    .node.active{background: rgba(255,138,0,.10); border:1px solid rgba(255,138,0,.25); color: var(--text)}
+    .indent-1{padding-left: 18px}
+    .indent-2{padding-left: 34px}
+    .indent-3{padding-left: 50px}
+    .tag{
+      margin-left:auto;
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .field{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:10px}
+    label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    input, select{width:100%; background:transparent; border:0; outline:none; color:var(--text); font-size:13px}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .btn{width:100%; display:inline-flex; justify-content:center; align-items:center; gap:8px; padding:11px 12px; border-radius:14px;
+         border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); cursor:pointer}
+    .btn.primary{border-color: rgba(255,138,0,.35); background: linear-gradient(135deg, rgba(255,138,0,.25), rgba(255,255,255,.04))}
+    .btn.ghost{background:transparent; color:var(--muted)}
+    .pill{padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px; white-space:nowrap}
+
+    .main{padding:18px}
+    .topbar{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px}
+    .title h2{margin:0; font-size:18px}
+    .title p{margin:4px 0 0; color:var(--muted); font-size:13px}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+    .grid{display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; align-items:start}
+    .card{border:1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--card);
+          border-radius: var(--r); box-shadow: var(--shadow); padding: var(--pad)}
+    .kpis{display:grid; grid-template-columns: repeat(3, 1fr); gap:12px}
+    .kpi{border:1px solid var(--line); background: rgba(255,255,255,.03); border-radius: var(--r2); padding:12px}
+    .kpi .label{margin:0 0 6px; font-size:11px; color:var(--muted)}
+    .kpi .value{font-size:18px; font-weight:800}
+    .kpi .sub{margin-top:6px; display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted)}
+    .delta.ok{color:var(--ok)} .delta.warn{color:var(--warn)} .delta.bad{color:var(--bad)}
+
+    .chart{
+      height: 320px; border-radius:16px; border:1px dashed rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 45%),
+                  radial-gradient(600px 300px at 30% 20%, rgba(45,212,191,.10), transparent 60%),
+                  rgba(0,0,0,.12);
+      display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; position:relative; overflow:hidden;
+    }
+    .chart::after{
+      content:""; position:absolute; inset:-40%;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 28px);
+      transform: rotate(-8deg); pointer-events:none;
+    }
+    .legend{position:absolute; left:14px; top:14px; display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); z-index:1; flex-wrap:wrap}
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block}
+    .dot.a{background:var(--brand)} .dot.b{background:var(--ok)} .dot.c{background:var(--warn)} .dot.d{background:#9aa7ff} .dot.e{background:#7dd3fc}
+    .quickbar{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+    .seg{padding:8px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px; cursor:pointer}
+    .seg.active{color:var(--text); border-color: rgba(255,138,0,.35); background: rgba(255,138,0,.12)}
+
+    table{width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:rgba(255,255,255,.02)}
+    th,td{padding:10px; border-bottom:1px solid var(--line); font-size:12px; text-align:left}
+    th{color:var(--muted); font-weight:600; background:rgba(255,255,255,.03)}
+    tr:last-child td{border-bottom:0}
+    .bar{height:8px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden}
+    .bar>span{display:block; height:100%; width:60%; background: linear-gradient(90deg, rgba(255,138,0,.85), rgba(45,212,191,.85))}
+    .small{color:var(--muted); font-size:12px; margin-top:10px}
+
+    @media (max-width: 1200px){
+      .app{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      .kpis{grid-template-columns: repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>RTIAP Energy</h1>
+          <p>Por activos • Drill-down</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#"><span>📊</span> Overview</a>
+        <a href="#"><span>📈</span> Analytics</a>
+        <a class="active" href="#"><span>🏭</span> Por activos <span class="pill">Drill-down</span></a>
+        <a href="#"><span>🧾</span> Costos & Tarifas</a>
+        <a href="#"><span>🚨</span> Alarmas</a>
+        <a href="#"><span>📤</span> Reportes</a>
+      </nav>
+
+      <div class="section-title">Buscar</div>
+      <div class="search">🔎 <input placeholder="Compresor #2, Túnel 5, Medidor 12..." /></div>
+
+      <div class="section-title">Jerarquía</div>
+      <div class="tree" aria-label="Árbol de activos (mock)">
+        <div class="node active"><span>▾</span> 🏭 Total Planta <span class="tag">1 medidor</span></div>
+        <div class="node indent-1"><span>▾</span> ❄️ Refrigeración <span class="tag">4 medidores</span></div>
+        <div class="node indent-2 active"><span>▾</span> 🧊 Compresores <span class="tag">2</span></div>
+        <div class="node indent-3 active"><span>•</span> ⚙️ Compresor #2 <span class="tag">Medidor #12</span></div>
+        <div class="node indent-3"><span>•</span> ⚙️ Compresor #1 <span class="tag">Medidor #11</span></div>
+        <div class="node indent-2"><span>▸</span> 🧊 Túneles <span class="tag">50</span></div>
+        <div class="node indent-1"><span>▸</span> 💡 Iluminación <span class="tag">1 medidor</span></div>
+        <div class="node indent-1"><span>▸</span> 🧰 Auxiliares <span class="tag">2 medidores</span></div>
+      </div>
+
+      <div class="section-title">Filtros rápidos</div>
+      <div class="row">
+        <div class="field">
+          <label>Desde</label>
+          <input value="2026-02-08" />
+        </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input value="2026-02-09" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Resolución</label>
+        <select>
+          <option>Auto</option>
+          <option>1 min</option>
+          <option>15 min</option>
+          <option>Hora</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tarifa (moneda/kWh)</label>
+        <input value="0.18" />
+      </div>
+
+      <div class="row">
+        <button class="btn primary">Aplicar</button>
+        <button class="btn ghost">Comparar</button>
+      </div>
+
+      <p class="small">
+        Idea clave: aquí el árbol manda, pero la ficha del activo debe ser “de un vistazo”.
+      </p>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="title">
+          <h2>Activo: Compresor #2 (Medidor #12)</h2>
+          <p>kW/kWh + PF + reactiva + V/I/f + eventos detectados. Todo en una ficha.</p>
+        </div>
+        <div class="actions">
+          <span class="pill">Estado: Operando</span>
+          <span class="pill">Última señal: 1 min</span>
+          <span class="pill">Crear alarma ▾</span>
+          <span class="pill">Exportar ▾</span>
+        </div>
+      </div>
+
+      <section class="grid">
+        <div class="card">
+          <h3>Ficha rápida</h3>
+          <div class="kpis">
+            <div class="kpi">
+              <div class="label">kW (actual)</div>
+              <div class="value">312 kW</div>
+              <div class="sub"><span>prom 24h</span><span class="delta ok">290</span></div>
+            </div>
+            <div class="kpi">
+              <div class="label">kWh (hoy)</div>
+              <div class="value">3,240</div>
+              <div class="sub"><span>costo</span><span class="delta ok">$583</span></div>
+            </div>
+            <div class="kpi">
+              <div class="label">PF (actual)</div>
+              <div class="value">0.87</div>
+              <div class="sub"><span>umbral</span><span class="delta warn">&lt; 0.92</span></div>
+            </div>
+
+            <div class="kpi">
+              <div class="label">Reactiva (kVAr)</div>
+              <div class="value">148</div>
+              <div class="sub"><span>kVArh 24h</span><span class="delta warn">1,920</span></div>
+            </div>
+            <div class="kpi">
+              <div class="label">Voltaje L-L (V)</div>
+              <div class="value">392</div>
+              <div class="sub"><span>min/max</span><span class="delta ok">388/396</span></div>
+            </div>
+            <div class="kpi">
+              <div class="label">Corriente (A)</div>
+              <div class="value">510</div>
+              <div class="sub"><span>min/max</span><span class="delta ok">430/590</span></div>
+            </div>
+          </div>
+
+          <div class="chart" role="img" aria-label="Serie multivariable del activo">
+            <div class="legend">
+              <span><span class="dot a"></span> kW</span>
+              <span><span class="dot b"></span> PF</span>
+              <span><span class="dot c"></span> kVAr</span>
+              <span><span class="dot d"></span> Voltaje</span>
+              <span><span class="dot e"></span> Frecuencia</span>
+            </div>
+            (Serie multivariable: selector de variables + ejes múltiples + umbrales)
+          </div>
+
+          <div class="quickbar">
+            <span class="seg active">kW</span>
+            <span class="seg">kWh</span>
+            <span class="seg">PF</span>
+            <span class="seg">Reactiva</span>
+            <span class="seg">Voltaje</span>
+            <span class="seg">Corriente</span>
+            <span class="seg">Frecuencia</span>
+            <span class="seg">Comparar vs ayer</span>
+            <span class="seg">Marcar eventos</span>
+          </div>
+
+          <p class="small">
+            UX importante: no forzar “7 gráficos”. Mejor 1 gráfico con selector de variables y overlays.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Ranking y diagnóstico</h3>
+          <table aria-label="Ranking consumo">
+            <thead>
+              <tr><th>Activo</th><th>kWh</th><th>%</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Compresor #2</td><td>3,240</td>
+                <td><div class="bar"><span style="width:82%"></span></div></td>
+              </tr>
+              <tr>
+                <td>Compresor #1</td><td>2,780</td>
+                <td><div class="bar"><span style="width:70%"></span></div></td>
+              </tr>
+              <tr>
+                <td>Túneles</td><td>2,110</td>
+                <td><div class="bar"><span style="width:54%"></span></div></td>
+              </tr>
+              <tr>
+                <td>Evaporadores</td><td>1,420</td>
+                <td><div class="bar"><span style="width:36%"></span></div></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px">
+            <div class="kpi">
+              <div class="label">Bandera</div>
+              <div class="value" style="font-size:16px">PF bajo recurrente</div>
+              <div class="sub"><span>impacto</span><span class="delta warn">Penalización potencial</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="kpi">
+              <div class="label">Evento reciente</div>
+              <div class="value" style="font-size:16px">Peak 18:20</div>
+              <div class="sub"><span>kW</span><span class="delta bad">612</span></div>
+            </div>
+          </div>
+
+          <p class="small">
+            Desde aquí debería haber acciones directas: “Crear alarma PF”, “Notificar peak”, “Sugerir capacitor/estrategia”.
+          </p>
+        </div>
+      </section>
+
+      <section style="margin-top:14px" class="card">
+        <h3>Tabla de detalle (para auditoría)</h3>
+        <table aria-label="Tabla detalle">
+          <thead>
+            <tr>
+              <th>Hora</th><th>kW</th><th>kWh acum.</th><th>PF</th><th>kVAr</th><th>V L-L</th><th>I</th><th>f</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>17:00</td><td>320</td><td>10,820</td><td>0.90</td><td>130</td><td>392</td><td>520</td><td>50.0</td></tr>
+            <tr><td>18:00</td><td>410</td><td>11,230</td><td>0.84</td><td>170</td><td>389</td><td>590</td><td>49.9</td></tr>
+            <tr><td>19:00</td><td>355</td><td>11,585</td><td>0.88</td><td>155</td><td>394</td><td>540</td><td>50.0</td></tr>
+            <tr><td>20:00</td><td>290</td><td>11,875</td><td>0.91</td><td>120</td><td>395</td><td>490</td><td>50.0</td></tr>
+            <tr><td>21:00</td><td>240</td><td>12,115</td><td>0.93</td><td>105</td><td>393</td><td>460</td><td>50.0</td></tr>
+          </tbody>
+        </table>
+        <p class="small">Aquí es donde se “cierra” la auditoría: export, trazabilidad y soporte.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

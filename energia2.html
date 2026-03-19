@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RTIAP Energy — Analytics (Mockup)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0f1a2f; --card:#101f3a; --text:#e8eefc; --muted:#a8b4d6;
+      --line:rgba(255,255,255,.08); --ok:#2dd4bf; --warn:#fbbf24; --bad:#fb7185; --brand:#ff8a00;
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --r:18px; --r2:14px; --pad:16px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font); color:var(--text);
+      background: radial-gradient(1200px 600px at 15% -10%, rgba(255,138,0,.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(45,212,191,.12), transparent 55%),
+                  var(--bg);
+    }
+    .app{display:grid; grid-template-columns: 340px 1fr; min-height:100vh}
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 25%), #0c172b;
+      border-right:1px solid var(--line); padding:18px;
+    }
+    .brand{display:flex; gap:10px; align-items:center; padding:10px 10px 14px; border-bottom:1px solid var(--line); margin-bottom:14px}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#ffcc66); box-shadow:0 10px 20px rgba(255,138,0,.2)}
+    .brand h1{font-size:14px;margin:0}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+    .nav{display:flex; flex-direction:column; gap:8px}
+    .nav a{padding:10px 12px; border-radius:12px; border:1px solid transparent; color:var(--muted); display:flex; gap:10px; align-items:center}
+    .nav a.active{background:rgba(255,255,255,.04); border-color:var(--line); color:var(--text)}
+    .section-title{margin:16px 0 8px; font-size:12px; color:var(--muted); letter-spacing:.35px; text-transform:uppercase}
+    .field{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:10px}
+    label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    input, select{width:100%; background:transparent; border:0; outline:none; color:var(--text); font-size:13px}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .btn{width:100%; display:inline-flex; justify-content:center; align-items:center; gap:8px; padding:11px 12px; border-radius:14px;
+         border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); cursor:pointer}
+    .btn.primary{border-color: rgba(255,138,0,.35); background: linear-gradient(135deg, rgba(255,138,0,.25), rgba(255,255,255,.04))}
+    .btn.ghost{background:transparent; color:var(--muted)}
+    .toggle{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px; border-radius:14px; border:1px solid var(--line);
+      background:rgba(255,255,255,.03); margin-bottom:10px; color:var(--muted); font-size:13px
+    }
+    .pill{
+      padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.03);
+      color:var(--muted); font-size:12px; white-space:nowrap
+    }
+
+    .main{padding:18px}
+    .topbar{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px}
+    .title h2{margin:0; font-size:18px}
+    .title p{margin:4px 0 0; color:var(--muted); font-size:13px}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+    .grid{display:grid; grid-template-columns: 1fr; gap:14px}
+    .cards{display:grid; grid-template-columns: repeat(4, 1fr); gap:12px}
+    .card{border:1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--card);
+          border-radius: var(--r); box-shadow: var(--shadow); padding: var(--pad)}
+    .kpi{border:1px solid var(--line); background: rgba(255,255,255,.03); border-radius: var(--r2); padding:12px}
+    .kpi .label{margin:0 0 6px; font-size:11px; color:var(--muted)}
+    .kpi .value{font-size:20px; font-weight:800}
+    .kpi .sub{margin-top:6px; display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted)}
+    .delta.ok{color:var(--ok)} .delta.warn{color:var(--warn)} .delta.bad{color:var(--bad)}
+
+    .split{display:grid; grid-template-columns: 1.4fr .6fr; gap:14px}
+    .chart{
+      height: 300px; border-radius:16px; border:1px dashed rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 45%),
+                  radial-gradient(600px 300px at 30% 20%, rgba(45,212,191,.10), transparent 60%),
+                  rgba(0,0,0,.12);
+      display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; position:relative; overflow:hidden;
+    }
+    .chart::after{
+      content:""; position:absolute; inset:-40%;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 28px);
+      transform: rotate(-8deg); pointer-events:none;
+    }
+    .legend{position:absolute; left:14px; top:14px; display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); z-index:1}
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block}
+    .dot.a{background:var(--brand)} .dot.b{background:var(--ok)} .dot.c{background:var(--warn)} .dot.d{background:#9aa7ff}
+    .mini{height: 140px}
+
+    .insight{
+      display:flex; gap:12px; padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.03); margin-bottom:10px
+    }
+    .badge{width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto}
+    .badge.ok{background:rgba(45,212,191,.15); color:var(--ok); border:1px solid rgba(45,212,191,.25)}
+    .badge.warn{background:rgba(251,191,36,.15); color:var(--warn); border:1px solid rgba(251,191,36,.25)}
+    .badge.bad{background:rgba(251,113,133,.15); color:var(--bad); border:1px solid rgba(251,113,133,.25)}
+    .insight h4{margin:0; font-size:13px}
+    .insight p{margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.35}
+
+    .bottom{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    table{width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:rgba(255,255,255,.02)}
+    th,td{padding:10px; border-bottom:1px solid var(--line); font-size:12px; text-align:left}
+    th{color:var(--muted); font-weight:600; background:rgba(255,255,255,.03)}
+    tr:last-child td{border-bottom:0}
+    .small{color:var(--muted); font-size:12px; margin-top:10px}
+
+    @media (max-width: 1150px){
+      .app{grid-template-columns:1fr}
+      .cards{grid-template-columns: repeat(2,1fr)}
+      .split{grid-template-columns:1fr}
+      .bottom{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>RTIAP Energy</h1>
+          <p>Analytics • Calidad • Demanda</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#"><span>📊</span> Overview</a>
+        <a class="active" href="#"><span>📈</span> Analytics <span class="pill">Pro</span></a>
+        <a href="#"><span>🏭</span> Por activos</a>
+        <a href="#"><span>🧾</span> Costos & Tarifas</a>
+        <a href="#"><span>🚨</span> Alarmas</a>
+        <a href="#"><span>📤</span> Reportes</a>
+      </nav>
+
+      <div class="section-title">Filtros</div>
+
+      <div class="field">
+        <label>Planta / Sitio</label>
+        <select>
+          <option>Frigorífico Central — Total</option>
+          <option>Frigorífico Central — Refrigeración</option>
+          <option>Planta Norte</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Medidor / Submedidor</label>
+        <select>
+          <option>Total planta</option>
+          <option>Refrigeración / Compresores</option>
+          <option>Túneles (grupo)</option>
+          <option>Submedidor #12</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Desde</label>
+          <input value="2026-01-15" />
+        </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input value="2026-02-09" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Resolución</label>
+        <select>
+          <option>Auto</option>
+          <option>1 min</option>
+          <option>15 min</option>
+          <option>Hora</option>
+          <option>Día</option>
+        </select>
+      </div>
+
+      <div class="section-title">Parámetros</div>
+
+      <div class="field">
+        <label>Tarifa energía (moneda/kWh)</label>
+        <input value="0.18" />
+      </div>
+
+      <div class="field">
+        <label>Umbral PF mínimo</label>
+        <input value="0.92" />
+      </div>
+
+      <div class="toggle">
+        <span>Mostrar reactiva (kVArh)</span>
+        <span class="pill">ON</span>
+      </div>
+
+      <div class="toggle">
+        <span>Marcar horario punta</span>
+        <span class="pill">ON</span>
+      </div>
+
+      <div class="toggle">
+        <span>Comparar vs período anterior</span>
+        <span class="pill">ON</span>
+      </div>
+
+      <div class="row">
+        <button class="btn primary">Aplicar</button>
+        <button class="btn ghost">Exportar</button>
+      </div>
+
+      <p class="small">
+        En Analytics el objetivo es “explicar” consumo/costo/demanda y calidad eléctrica (PF, reactiva, V/I/f).
+      </p>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="title">
+          <h2>Analytics — Energía & Calidad</h2>
+          <p>Demanda máxima, PF, reactiva, voltajes/corrientes/frecuencia y comparativos.</p>
+        </div>
+        <div class="actions">
+          <span class="pill">Última actualización: 2 min</span>
+          <span class="pill">Exportar PDF ▾</span>
+          <span class="pill">Guardar vista ▾</span>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <section class="cards">
+        <div class="kpi">
+          <div class="label">kWh (período)</div>
+          <div class="value">384 MWh</div>
+          <div class="sub"><span>vs anterior</span><span class="delta ok">▼ 5.4%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Demanda máx (kW)</div>
+          <div class="value">612 kW</div>
+          <div class="sub"><span>horario punta</span><span class="delta bad">● Sí</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">PF promedio</div>
+          <div class="value">0.89</div>
+          <div class="sub"><span>mín (umbral 0.92)</span><span class="delta warn">▲ Incumple</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Costo estimado</div>
+          <div class="value">$ 69,120</div>
+          <div class="sub"><span>tarifa</span><span class="delta ok">$0.18/kWh</span></div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="split">
+          <div class="card">
+            <h3>Consumo & Demanda (kWh / kW)</h3>
+            <div class="chart" role="img" aria-label="Gráfico principal consumo y demanda">
+              <div class="legend">
+                <span><span class="dot a"></span> kW</span>
+                <span><span class="dot b"></span> kWh</span>
+                <span><span class="dot c"></span> Punta</span>
+                <span><span class="dot d"></span> Período anterior</span>
+              </div>
+              (Gráfico principal: líneas/áreas + overlays de punta + comparación)
+            </div>
+            <p class="small">
+              Ideal: zoom + selección de rango + “marcadores de eventos” (arranque compresor, cambio setpoint, etc.).
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Insights</h3>
+            <div class="insight">
+              <div class="badge warn">!</div>
+              <div>
+                <h4>PF bajo recurrente</h4>
+                <p>El 38% del tiempo PF &lt; 0.92. Riesgo de penalización por reactiva.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="badge bad">!</div>
+              <div>
+                <h4>Demanda máxima en punta</h4>
+                <p>Peak 612 kW coincide con ventana punta. Recomendar estrategia de “peak shaving”.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="badge ok">✓</div>
+              <div>
+                <h4>Voltaje estable</h4>
+                <p>V L-L dentro de banda. Sin caídas críticas detectadas en el período.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom">
+          <div class="card">
+            <h3>Reactiva & PF</h3>
+            <div class="chart mini" role="img" aria-label="Reactiva y PF">
+              <div class="legend">
+                <span><span class="dot b"></span> PF</span>
+                <span><span class="dot c"></span> kVAr</span>
+              </div>
+              (Gráfico: PF + reactiva, umbral PF mínimo, zonas de penalización)
+            </div>
+            <div class="small">
+              Recomendación UX: mostrar “horas bajo umbral” + “kVArh estimado” + “costo penalización (si aplica)”.
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Calidad eléctrica (V / I / f)</h3>
+            <div class="chart mini" role="img" aria-label="Voltajes corrientes frecuencia">
+              <div class="legend">
+                <span><span class="dot a"></span> Voltaje</span>
+                <span><span class="dot d"></span> Corriente</span>
+                <span><span class="dot b"></span> Frecuencia</span>
+              </div>
+              (Gráfico: V, I, f con bandas aceptables y detección de outliers)
+            </div>
+            <div class="small">
+              Ideal: selector “fase A/B/C” y “promedio / max / min”.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Heatmap de demanda (kW) por hora × día</h3>
+          <div class="chart" style="height:260px" role="img" aria-label="Heatmap">
+            (Heatmap: detecta patrones de consumo. Perfecto para ver “consumo base” y picos por turno.)
+          </div>
+          <p class="small">
+            Este panel normalmente es el que más “vende”: muestra patrones operacionales y desperdicios.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Eventos detectados (autogenerados)</h3>
+          <table aria-label="Eventos detectados">
+            <thead>
+              <tr>
+                <th>Fecha/Hora</th>
+                <th>Tipo</th>
+                <th>Detalle</th>
+                <th>Impacto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-02-08 18:20</td>
+                <td>Peak</td>
+                <td>Demanda 612 kW (punta)</td>
+                <td class="delta bad">Alto</td>
+              </tr>
+              <tr>
+                <td>2026-02-07 02:10</td>
+                <td>PF bajo</td>
+                <td>PF 0.81 por 23 min</td>
+                <td class="delta warn">Medio</td>
+              </tr>
+              <tr>
+                <td>2026-02-06 11:05</td>
+                <td>Caída V</td>
+                <td>V L-L -7% (8 min)</td>
+                <td class="delta warn">Medio</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="small">Botón ideal: “Ir al gráfico” + “Crear alarma” desde el evento.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
